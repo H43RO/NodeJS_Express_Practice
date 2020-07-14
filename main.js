@@ -8,6 +8,9 @@ var bodyParser = require('body-parser');
 const express = require('express');
 const app = express();
 
+//Static File ('public' directory)
+app.use(express.static('public'));
+
 //Body-parser
 app.use(bodyParser.urlencoded({ extended: false }));
 
@@ -24,15 +27,14 @@ app.get('/', function(request, response) {
     var description = 'Hello, Node.js';
     var list = template.list(request.list);
     var html = template.HTML(title, list,
-        `<h2>${title}</h2>${description}`,
+        `<h2>${title}</h2>${description}
+        <img src="/images/coding.jpg" style="width:80%; display:block; margin:10px">`,
         `<a href="/create">create</a>`
     );
     response.send(html);
-
 });
 
 app.get('/page/:pageId', function(request, response) {
-
     var filteredId = path.parse(request.params.pageId).base;
     fs.readFile(`data/${filteredId}`, 'utf8', function(err, description) {
         var title = request.params.pageId
