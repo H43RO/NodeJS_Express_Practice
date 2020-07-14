@@ -34,25 +34,30 @@ app.get('/', function(request, response) {
     response.send(html);
 });
 
-app.get('/page/:pageId', function(request, response) {
+app.get('/page/:pageId', function(request, response, next) {
     var filteredId = path.parse(request.params.pageId).base;
     fs.readFile(`data/${filteredId}`, 'utf8', function(err, description) {
-        var title = request.params.pageId
-        var sanitizedTitle = sanitizeHtml(title);
-        var sanitizedDescription = sanitizeHtml(description, {
-            allowedTags: ['h1']
-        });
-        var list = template.list(request.list);
-        var html = template.HTML(sanitizedTitle, list,
-            `<h2>${sanitizedTitle}</h2>${sanitizedDescription}`,
-            ` <a href="/create">create</a>
-                    <a href="/update/${sanitizedTitle}">update</a>
-                    <form action="/delete_process" method="post">
-                      <input type="hidden" name="id" value="${sanitizedTitle}">
-                      <input type="submit" value="delete">
-                    </form>`
-        );
-        response.send(html);
+        if (err) {
+            //500 에러처리
+            next(err);
+        } else {
+            var title = request.params.pageId
+            var sanitizedTitle = sanitizeHtml(title);
+            var sanitizedDescription = sanitizeHtml(description, {
+                allowedTags: ['h1']
+            });
+            var list = template.list(request.list);
+            var html = template.HTML(sanitizedTitle, list,
+                `<h2>${sanitizedTitle}</h2>${sanitizedDescription}`,
+                ` <a href="/create">create</a>
+                      <a href="/update/${sanitizedTitle}">update</a>
+                      <form action="/delete_process" method="post">
+                        <input type="hidden" name="id" value="${sanitizedTitle}">
+                        <input type="submit" value="delete">
+                      </form>`
+            );
+            response.send(html);
+        }
     });
 
 });
@@ -129,6 +134,17 @@ app.post('/delete_process', function(request, response) {
     fs.unlink(`data/${filteredId}`, function(error) {
         response.redirect(`/`);
     })
+});
+
+//404 에러 처리
+app.use(function(request, response, next) {
+    response.status(404).send('404 not found');
+});
+
+//500 에러 처리
+app.use(function(err, request, response, next) {
+    console.error(err.stack);
+    response.status(500).send('Something broke!');
 });
 
 app.listen(3000, () => console.log('Example app listening on port 3000'));
