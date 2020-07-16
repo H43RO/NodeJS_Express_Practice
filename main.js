@@ -141,7 +141,7 @@ app.use(function(request, response, next) {
     response.status(404).send('404 not found');
 });
 
-//500 에러 처리
+//500 에러 처리 (특이하게 MiddleWare의 인자가 4개임 - Error Handling)
 app.use(function(err, request, response, next) {
     console.error(err.stack);
     response.status(500).send('Something broke!');
